@@ -1,66 +1,74 @@
-import os
+"""Configuration loading and validation for cronwatcher."""
+
 import json
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, Optional
 
 
 @dataclass
 class WebhookConfig:
     url: str
-    secret: Optional[str] = None
     timeout: int = 10
+    secret: Optional[str] = None
 
 
 @dataclass
 class CronJobConfig:
     name: str
-    schedule: str
-    command: str
-    max_retries: int = 0
-    alert_on_failure: bool = True
+    webhook_url: Optional[str] = None
+    enabled: bool = True
 
 
 @dataclass
 class Config:
+    log_path: str
     webhook: WebhookConfig
-    jobs: List[CronJobConfig] = field(default_factory=list)
-    log_level: str = "INFO"
-    log_file: Optional[str] = None
-    check_interval: int = 60
+    jobs: Dict[str, CronJobConfig] = field(default_factory=dict)
+    alert_cooldown_seconds: int = 300
+    debug: bool = False
+
+
+def _parse_webhook(data: dict) -> WebhookConfig:
+    if "url" not in data:
+        raise ValueError("webhook config missing required field 'url'")
+    return WebhookConfig(
+        url=data["url"],
+        timeout=data.get("timeout", 10),
+        secret=data.get("secret"),
+    )
+
+
+def _parse_jobs(data: list) -> Dict[str, CronJobConfig]:
+    jobs: Dict[str, CronJobConfig] = {}
+    for item in data:
+        if "name" not in item:
+            raise ValueError("job entry missing required field 'name'")
+        name = item["name"]
+        jobs[name] = CronJobConfig(
+            name=name,
+            webhook_url=item.get("webhook_url"),
+            enabled=item.get("enabled", True),
+        )
+    return jobs
 
 
 def load_config(path: str) -> Config:
-    if not os.path.exists(path):
+    """Load and parse configuration from a JSON file."""
+    try:
+        with open(path, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
         raise FileNotFoundError(f"Config file not found: {path}")
 
-    with open(path, "r") as f:
-        data = json.load(f)
-
-    webhook_data = data.get("webhook", {})
-    if not webhook_data.get("url"):
-        raise ValueError("webhook.url is required in config")
-
-    webhook = WebhookConfig(
-        url=webhook_data["url"],
-        secret=webhook_data.get("secret"),
-        timeout=webhook_data.get("timeout", 10),
-    )
-
-    jobs = [
-        CronJobConfig(
-            name=j["name"],
-            schedule=j["schedule"],
-            command=j["command"],
-            max_retries=j.get("max_retries", 0),
-            alert_on_failure=j.get("alert_on_failure", True),
-        )
-        for j in data.get("jobs", [])
-    ]
+    if "webhook" not in data:
+        raise ValueError("Config missing required section 'webhook'")
+    if "log_path" not in data:
+        raise ValueError("Config missing required field 'log_path'")
 
     return Config(
-        webhook=webhook,
-        jobs=jobs,
-        log_level=data.get("log_level", "INFO"),
-        log_file=data.get("log_file"),
-        check_interval=data.get("check_interval", 60),
+        log_path=data["log_path"],
+        webhook=_parse_webhook(data["webhook"]),
+        jobs=_parse_jobs(data.get("jobs", [])),
+        alert_cooldown_seconds=data.get("alert_cooldown_seconds", 300),
+        debug=data.get("debug", False),
     )
