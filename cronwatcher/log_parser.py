@@ -61,3 +61,15 @@ def parse_log_lines(lines: list[str]) -> list[CronLogEntry]:
 def filter_failures(entries: list[CronLogEntry]) -> list[CronLogEntry]:
     """Return only entries that represent cron job failures."""
     return [e for e in entries if e.is_failure]
+
+
+def group_by_user(entries: list[CronLogEntry]) -> dict[str, list[CronLogEntry]]:
+    """Group log entries by the user that ran the cron job.
+
+    Returns a dict mapping each username to a list of their log entries,
+    in the order they were encountered.
+    """
+    grouped: dict[str, list[CronLogEntry]] = {}
+    for entry in entries:
+        grouped.setdefault(entry.user, []).append(entry)
+    return grouped
