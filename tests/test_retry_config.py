@@ -47,3 +47,21 @@ def test_backoff_factor_below_one_raises():
 def test_max_delay_less_than_base_delay_raises():
     with pytest.raises(ValueError, match="max_delay"):
         parse_retry_config({"retry": {"base_delay": 10.0, "max_delay": 5.0}})
+
+
+def test_max_attempts_exactly_one_is_valid():
+    """max_attempts=1 means no retries, just a single attempt — should be allowed."""
+    cfg = parse_retry_config({"retry": {"max_attempts": 1}})
+    assert cfg.max_attempts == 1
+
+
+def test_base_delay_zero_is_valid():
+    """A base_delay of 0 disables the initial wait between retries — should be allowed."""
+    cfg = parse_retry_config({"retry": {"base_delay": 0.0}})
+    assert cfg.base_delay == 0.0
+
+
+def test_backoff_factor_exactly_one_is_valid():
+    """backoff_factor=1.0 means constant delay (no exponential growth) — should be allowed."""
+    cfg = parse_retry_config({"retry": {"backoff_factor": 1.0}})
+    assert cfg.backoff_factor == 1.0
