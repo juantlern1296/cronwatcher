@@ -1,31 +1,38 @@
 {
   "webhook": {
     "url": "https://hooks.example.com/services/XXX/YYY/ZZZ",
-    "secret": "optional-hmac-secret",
-    "timeout_seconds": 10
+    "timeout_seconds": 5
   },
   "jobs": [
     {
-      "name": "backup",
-      "schedule": "0 2 * * *",
-      "log_pattern": "/var/log/cron",
-      "enabled": true
+      "name": "nightly-backup",
+      "schedule": "0 2 * * *"
     },
     {
-      "name": "cleanup",
-      "schedule": "30 3 * * 0",
-      "log_pattern": "/var/log/cron",
-      "enabled": true
+      "name": "hourly-sync",
+      "schedule": "0 * * * *"
     }
   ],
+  "job_filter": {
+    "include": ["*backup*", "*sync*"],
+    "exclude": ["*test*", "*dry-run*"]
+  },
   "retry": {
     "max_attempts": 3,
-    "base_delay": 1.0,
-    "backoff_factor": 2.0,
-    "max_delay": 30.0
+    "base_delay_seconds": 2.0,
+    "backoff_factor": 2.0
   },
-  "cooldown_seconds": 300,
-  "dedup_window_seconds": 60,
-  "health_port": 8080,
-  "metrics_interval_seconds": 60
+  "rate_limiter": {
+    "max_tokens": 10,
+    "refill_rate": 1.0
+  },
+  "health": {
+    "port": 8080
+  },
+  "metrics": {
+    "report_interval_seconds": 60
+  },
+  "job_history": {
+    "max_entries": 100
+  }
 }
