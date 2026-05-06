@@ -1,26 +1,29 @@
 {
   "webhook": {
-    "url": "https://hooks.example.com/services/YOUR/WEBHOOK/URL",
-    "secret": "optional-shared-secret",
-    "timeout": 10
+    "url": "https://hooks.example.com/services/XXX/YYY/ZZZ",
+    "secret": "optional-hmac-secret",
+    "timeout_seconds": 10
   },
-  "log_level": "INFO",
-  "log_file": "/var/log/cronwatcher.log",
-  "check_interval": 60,
   "jobs": [
     {
-      "name": "daily-backup",
+      "name": "backup",
       "schedule": "0 2 * * *",
-      "command": "/usr/local/bin/backup.sh",
-      "max_retries": 1,
-      "alert_on_failure": true
+      "log_pattern": "/var/log/cron"
     },
     {
-      "name": "hourly-sync",
-      "schedule": "0 * * * *",
-      "command": "/usr/local/bin/sync.sh",
-      "max_retries": 0,
-      "alert_on_failure": true
+      "name": "cleanup",
+      "schedule": "30 3 * * 0",
+      "log_pattern": "/var/log/cron"
     }
-  ]
+  ],
+  "retry": {
+    "max_attempts": 3,
+    "base_delay": 1.0,
+    "backoff_factor": 2.0,
+    "max_delay": 30.0
+  },
+  "cooldown_seconds": 300,
+  "dedup_window_seconds": 60,
+  "health_port": 8080,
+  "metrics_interval_seconds": 60
 }
