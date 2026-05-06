@@ -21,6 +21,11 @@ def make_failure_handler(
     dedup_store: DedupStore,
     metrics: MetricsStore,
 ):
+    """Return a closure that processes a cron failure entry.
+
+    The handler deduplicates events, records metrics, enforces alert cooldowns,
+    and dispatches webhook notifications.
+    """
     def on_failure(entry: CronLogEntry) -> None:
         job_name = entry.job_name or "unknown"
 
@@ -49,7 +54,11 @@ def make_failure_handler(
 
 
 def run(config: Config, metrics: Optional[MetricsStore] = None) -> None:
-    """Start the cronwatcher daemon."""
+    """Start the cronwatcher daemon.
+
+    Sets up logging, initialises all subsystems, and blocks on the log watcher.
+    The metrics reporter is guaranteed to be stopped on exit.
+    """
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -71,3 +80,4 @@ def run(config: Config, metrics: Optional[MetricsStore] = None) -> None:
         watcher.run()
     finally:
         reporter.stop()
+        logger.info("cronwatcher stopped")
