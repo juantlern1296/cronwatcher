@@ -73,3 +73,13 @@ def test_delay_capped_at_max_delay():
         with_retry(fn, cfg, job_name="test_job")
     for call in mock_sleep.call_args_list:
         assert call.args[0] <= 5.0
+
+
+def test_no_sleep_after_last_attempt():
+    """Sleep should only occur between attempts, not after the final one."""
+    cfg = RetryConfig(max_attempts=3, base_delay=1.0, backoff_factor=1.0, max_delay=30.0)
+    fn = MagicMock(return_value=False)
+    with patch("cronwatcher.retry.time.sleep") as mock_sleep:
+        with_retry(fn, cfg, job_name="test_job")
+    # 3 attempts means 2 sleeps (between attempt 1-2 and 2-3, not after 3)
+    assert mock_sleep.call_count == 2
