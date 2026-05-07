@@ -1,0 +1,28 @@
+{
+  "webhook": {
+    "url": "https://hooks.example.com/default",
+    "headers": {"Authorization": "Bearer token123"}
+  },
+  "jobs": [
+    {"name": "backup", "schedule": "0 2 * * *"},
+    {"name": "cleanup", "schedule": "0 3 * * 0"}
+  ],
+  "alert_channels": [
+    {
+      "name": "ops-slack",
+      "url": "https://hooks.slack.com/services/AAA/BBB/CCC",
+      "tags": ["slack", "ops"]
+    },
+    {
+      "name": "pagerduty",
+      "url": "https://events.pagerduty.com/v2/enqueue",
+      "headers": {"Authorization": "Token token=abc123"},
+      "tags": ["pagerduty", "critical"]
+    },
+    {
+      "name": "teams-general",
+      "url": "https://outlook.office.com/webhook/xxx",
+      "tags": ["teams"]
+    }
+  ]
+}
