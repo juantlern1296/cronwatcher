@@ -6,6 +6,7 @@ from typing import Any, Dict, Optional
 from cronwatcher.dead_letter import DeadLetterQueue
 
 _DEFAULT_MAX_SIZE = 500
+_MAX_ALLOWED_SIZE = 100_000
 
 
 def parse_dead_letter_config(config: Dict[str, Any]) -> Optional[DeadLetterQueue]:
@@ -39,5 +40,10 @@ def parse_dead_letter_config(config: Dict[str, Any]) -> Optional[DeadLetterQueue
 
     if max_size < 1:
         raise ValueError("dead_letter.max_size must be at least 1")
+
+    if max_size > _MAX_ALLOWED_SIZE:
+        raise ValueError(
+            f"dead_letter.max_size must not exceed {_MAX_ALLOWED_SIZE}, got {max_size}"
+        )
 
     return DeadLetterQueue(max_size=max_size)
