@@ -1,0 +1,17 @@
+{
+  "webhook": {
+    "url": "https://hooks.example.com/cron-alerts",
+    "secret": "optional-hmac-secret"
+  },
+  "jobs": [
+    {
+      "name": "nightly-backup",
+      "schedule": "0 2 * * *",
+      "timeout_seconds": 1800
+    }
+  ],
+  "alert_acknowledge": {
+    "enabled": true,
+    "default_duration_seconds": 3600
+  }
+}
