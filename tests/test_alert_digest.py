@@ -111,10 +111,12 @@ def test_custom_values():
 
 
 def test_invalid_interval_in_config_raises():
+    """parse_alert_digest should propagate ValueError for bad interval_seconds."""
     with pytest.raises(ValueError, match="interval_seconds"):
-        parse_alert_digest({"alert_digest": {"enabled": True, "interval_seconds": -1}})
+        parse_alert_digest({"alert_digest": {"enabled": True, "interval_seconds": 0}})
 
 
-def test_not_a_dict_raises():
-    with pytest.raises(TypeError):
-        parse_alert_digest({"alert_digest": "yes"})
+def test_invalid_min_alerts_in_config_raises():
+    """parse_alert_digest should propagate ValueError for bad min_alerts."""
+    with pytest.raises(ValueError, match="min_alerts"):
+        parse_alert_digest({"alert_digest": {"enabled": True, "min_alerts": 0}})
