@@ -1,0 +1,22 @@
+{
+  "webhook": {
+    "url": "https://hooks.example.com/services/abc123",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  },
+  "jobs": [
+    {
+      "name": "nightly-backup",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "name": "db-cleanup",
+      "schedule": "30 3 * * *"
+    }
+  ],
+  "alert_baseline": {
+    "window_size": 7,
+    "deviation_factor": 2.5
+  }
+}
