@@ -1,0 +1,40 @@
+{
+  "webhook": {
+    "url": "http://default-alerts.example.com/hook",
+    "headers": {"Authorization": "Bearer token123"},
+    "timeout": 10
+  },
+  "on_call": {
+    "fallback_url": "http://pagerduty.example.com/fallback",
+    "slots": [
+      {
+        "name": "weekday-business-hours",
+        "webhook_url": "http://pagerduty.example.com/primary",
+        "weekdays": [0, 1, 2, 3, 4],
+        "start_time": "09:00",
+        "end_time": "17:00"
+      },
+      {
+        "name": "weekday-after-hours",
+        "webhook_url": "http://pagerduty.example.com/secondary",
+        "weekdays": [0, 1, 2, 3, 4],
+        "start_time": "17:00",
+        "end_time": "23:59"
+      },
+      {
+        "name": "weekend",
+        "webhook_url": "http://pagerduty.example.com/weekend",
+        "weekdays": [5, 6],
+        "start_time": "00:00",
+        "end_time": "23:59"
+      }
+    ]
+  },
+  "jobs": [
+    {
+      "name": "backup",
+      "schedule": "0 2 * * *",
+      "command": "/usr/local/bin/backup.sh"
+    }
+  ]
+}
