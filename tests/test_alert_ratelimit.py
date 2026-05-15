@@ -76,6 +76,15 @@ def test_independent_jobs(limiter):
     assert rl.is_allowed("job_b") is True
 
 
+def test_window_boundary_not_yet_expired(limiter):
+    """Alerts exactly at the window boundary should still be blocked."""
+    rl, t = limiter
+    for _ in range(3):
+        rl.record("backup")
+    t[0] = 60.0  # exactly at window edge, not past it
+    assert rl.is_allowed("backup") is False
+
+
 # --- parse_ratelimit_config ---
 
 def test_no_section_returns_none():
@@ -115,5 +124,5 @@ def test_ratelimited_handler_blocks_after_limit():
     p = make_payload()
     wrapped(p)
     wrapped(p)
-    wrapped(p)  # should be blocked
+    wrapped(p)  # this third call should be blocked
     assert handler.call_count == 2
